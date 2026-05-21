@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mithai Store</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f5f5;
+padding:20px;
+}
+
+header{
+background:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-radius:10px;
+margin-bottom:30px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+h1{
+color:#d35400;
+}
+
+.cart-count{
+font-size:18px;
+font-weight:bold;
+}
+
+.container{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+.card:hover{
+transform:translateY(-5px);
+transition:0.3s;
+}
+
+.card img{
+width:100%;
+height:200px;
+object-fit:cover;
+}
+
+.content{
+padding:15px;
+}
+
+.price{
+font-weight:bold;
+color:green;
+margin:10px 0;
+}
+
+.addBtn{
+width:100%;
+padding:10px;
+background:#d35400;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.cart-section{
+margin-top:40px;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+.cart-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px;
+border-bottom:1px solid lightgray;
+}
+
+.controls{
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+.small-btn{
+width:25px;
+height:25px;
+border:none;
+background:#d35400;
+color:white;
+border-radius:4px;
+cursor:pointer;
+font-size:14px;
+}
+
+.remove-btn{
+background:red;
+width:auto;
+padding:5px 10px;
+}
+
+.total{
+margin-top:20px;
+font-size:20px;
+font-weight:bold;
+color:green;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>Mithai Store</h1>
+
+<div class="cart-count">
+Cart: <span id="count">0</span>
+</div>
+
+</header>
+
+<div class="container" id="products"></div>
+
+<div class="cart-section">
+
+<h2>Your Cart</h2>
+
+<div id="cartItems"></div>
+
+<div class="total">
+Total: ₹<span id="total">0</span>
+</div>
+
+</div>
+
+<script>
+
+fetch("https://dummyjson.com/users")
+.then(res=>res.json())
+.then(data=>{
+
+const sweets=[
+
+{
+name:"Gulab Jamun",
+price:120,
+image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqa3gLqniZ1W-aHtjbpwMQ_z2aovluPJ6XKA&s"
+},
+
+{
+name:"Kaju Barfi",
+price:180,
+image:"https://upload.wikimedia.org/wikipedia/commons/a/ac/Kaju_katli_sweet.jpg"
+},
+
+{
+name:"Rasgulla",
+price:150,
+image:"https://easysavorymeals.com/wp-content/uploads/2025/09/homemade-Rasgulla-Recipe-500x375.jpg"
+},
+
+{
+name:"Boondi Laddu",
+price:220,
+image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqEhYulyrK8t1twZQsnL4b5iYZVPN-fYkf-A&s"
+},
+
+{
+name:"Dry Fruit Halwa",
+price:100,
+image:"https://i.ytimg.com/vi/2caFygyvTgM/maxresdefault.jpg"
+},
+
+{
+name:"Jalebi",
+price:90,
+image:"https://www.chilitochoc.com/wp-content/uploads/2025/03/instant-jalebi-recipe-480x270.jpg"
+}
+
+];
+
+displayProducts(sweets);
+
+})
+
+let cart=[];
+
+function displayProducts(items){
+
+const products=document.getElementById("products");
+
+items.forEach(item=>{
+
+products.innerHTML+=`
+
+<div class="card">
+
+<img src="${item.image}">
+
+<div class="content">
+
+<h3>${item.name}</h3>
+
+<div class="price">
+₹${item.price}
+</div>
+
+<button class="addBtn"
+onclick='addToCart("${item.name}",${item.price})'>
+Add To Cart
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+
+function addToCart(name,price){
+
+let existing=cart.find(item=>item.name===name);
+
+if(existing){
+
+existing.quantity++;
+
+}
+else{
+
+cart.push({
+name:name,
+price:price,
+quantity:1
+});
+
+}
+
+updateCart();
+
+}
+
+
+function increase(index){
+
+cart[index].quantity++;
+
+updateCart();
+
+}
+
+function decrease(index){
+
+if(cart[index].quantity>1){
+
+cart[index].quantity--;
+
+}
+else{
+
+cart.splice(index,1);
+
+}
+
+updateCart();
+
+}
+
+
+function removeItem(index){
+
+cart.splice(index,1);
+
+updateCart();
+
+}
+
+
+function updateCart(){
+
+let html="";
+let total=0;
+let count=0;
+
+cart.forEach((item,index)=>{
+
+count+=item.quantity;
+
+total+=(item.price*item.quantity);
+
+html+=`
+
+<div class="cart-item">
+
+<div>
+
+<h4>${item.name}</h4>
+<p>₹${item.price}</p>
+
+</div>
+
+<div class="controls">
+
+<button class="small-btn"
+onclick="decrease(${index})">
+-
+</button>
+
+<span>${item.quantity}</span>
+
+<button class="small-btn"
+onclick="increase(${index})">
++
+</button>
+
+<button class="small-btn remove-btn"
+onclick="removeItem(${index})">
+X
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("cartItems").innerHTML=html;
+document.getElementById("total").innerText=total;
+document.getElementById("count").innerText=count;
+
+}
+
+</script>
+
+</body>
+</html>
